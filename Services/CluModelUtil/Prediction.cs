@@ -17,17 +17,14 @@ namespace HicsChatBot.Services.CluModelUtil
         public Prediction(JsonElement prediction_data)
         {
             // Map: intents
-            JsonElement predictedIntents;
-            if (prediction_data.TryGetProperty("intents", out predictedIntents))
+            if (prediction_data.TryGetProperty("intents", out JsonElement predictedIntents))
             {
                 this.intents = new List<Intent>();
 
                 foreach (JsonElement intentElement in predictedIntents.EnumerateArray())
                 {
-                    JsonElement categoryJson;
-                    JsonElement confidenceScoreJson;
-                    if (!intentElement.TryGetProperty("category", out categoryJson) ||
-                        !intentElement.TryGetProperty("confidenceScore", out confidenceScoreJson))
+                    if (!intentElement.TryGetProperty("category", out JsonElement categoryJson) ||
+                        !intentElement.TryGetProperty("confidenceScore", out JsonElement confidenceScoreJson))
                     {
                         continue;
                     }
@@ -40,8 +37,7 @@ namespace HicsChatBot.Services.CluModelUtil
             }
 
             // Maps: topIntent
-            JsonElement topIntentElement;
-            if (prediction_data.TryGetProperty("topIntent", out topIntentElement) &&
+            if (prediction_data.TryGetProperty("topIntent", out JsonElement topIntentElement) &&
                     this.intents.Count > 0 &&
                     this.intents[0].getCategory() == topIntentElement.GetString())
             {
@@ -49,19 +45,14 @@ namespace HicsChatBot.Services.CluModelUtil
             }
 
             // Maps: entities
-            JsonElement predictedEntities;
-            if (prediction_data.TryGetProperty("entities", out predictedEntities))
+            if (prediction_data.TryGetProperty("entities", out JsonElement predictedEntities))
             {
                 this.entities = new List<Entity>();
                 foreach (JsonElement ent in predictedEntities.EnumerateArray())
                 {
-                    JsonElement categoryJson;
-                    JsonElement textJson;
-                    JsonElement confidenceScoreJson;
-
-                    if (!ent.TryGetProperty("category", out categoryJson) ||
-                        !ent.TryGetProperty("text", out textJson) ||
-                        !ent.TryGetProperty("confidenceScore", out confidenceScoreJson))
+                    if (!ent.TryGetProperty("category", out JsonElement categoryJson) ||
+                        !ent.TryGetProperty("text", out JsonElement textJson) ||
+                        !ent.TryGetProperty("confidenceScore", out JsonElement confidenceScoreJson))
                     {
                         continue;
                     }
@@ -77,8 +68,7 @@ namespace HicsChatBot.Services.CluModelUtil
                     }
                     else if (category == "DateTime")
                     {
-                        JsonElement datetimeJson;
-                        if (ent.GetProperty("resolutions").GetArrayLength() == 0 || !ent.GetProperty("resolutions")[0].TryGetProperty("value", out datetimeJson))
+                        if (ent.GetProperty("resolutions").GetArrayLength() == 0 || !ent.GetProperty("resolutions")[0].TryGetProperty("value", out JsonElement datetimeJson))
                         {
                             continue;
                         }
@@ -94,22 +84,34 @@ namespace HicsChatBot.Services.CluModelUtil
             }
         }
 
-        public Intent getTopIntent()
+        public Intent GetTopIntent()
         {
             return this.topIntent;
         }
 
-        public List<Intent> getIntents()
+        public List<Intent> GetIntents()
         {
             return this.intents;
         }
 
-        public List<Entity> getEntities()
+        public List<Entity> GetEntities()
         {
             return this.entities;
         }
 
-        public DoctorSpecializationEntity getTopSpecialization()
+        public Entity GetNricEntity()
+        {
+            foreach (Entity e in this.entities)
+            {
+                if (e.getCategory() == "NRIC")
+                {
+                    return e;
+                }
+            }
+            return null;
+        }
+
+        public DoctorSpecializationEntity GetTopSpecialization()
         {
             foreach (Entity e in this.entities)
             {
@@ -121,9 +123,9 @@ namespace HicsChatBot.Services.CluModelUtil
             return null;
         }
 
-        public List<DateTimeEntity> getDateTimes()
+        public List<DateTimeEntity> GetDateTimes()
         {
-            List<DateTimeEntity> datetimes = new List<DateTimeEntity>();
+            List<DateTimeEntity> datetimes = new();
 
             foreach (Entity e in this.entities)
             {
@@ -134,6 +136,25 @@ namespace HicsChatBot.Services.CluModelUtil
             }
 
             return datetimes;
+        }
+
+        public override string ToString()
+        {
+            string str = "";
+
+            str += "#intents = " + this.intents.Count + "\n  ";
+            foreach (Intent i in this.intents)
+            {
+                str += i.ToString() + "\n  ";
+            }
+
+            str += "\n\n#entities = " + this.entities.Count + "\n  ";
+            foreach (Entity e in this.entities)
+            {
+                str += e.ToString() + "\n  ";
+            }
+
+            return str;
         }
     }
 }
