@@ -7,10 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 
+using HicsChatBot.Services;
+
 namespace Microsoft.BotBuilderSamples.Bots
 {
     public class EchoBot : ActivityHandler
     {
+        private readonly CluModelService model = CluModelService.inst();
+        private readonly PatientsService ps = new PatientsService();
+
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             var replyText = $"Echo: {turnContext.Activity.Text}";
