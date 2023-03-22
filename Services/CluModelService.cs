@@ -10,8 +10,8 @@ namespace HicsChatBot.Services
 {
     public class CluModelService
     {
-        private readonly AzureKeyCredential credential = new AzureKeyCredential("CREDENTIALS");
-        private readonly Uri endpoint = new Uri("ENDPOINT");
+        private readonly AzureKeyCredential credential = new AzureKeyCredential("CLU_KEY");
+        private readonly Uri endpoint = new Uri("CLU_ENDPOINT");
         private ConversationAnalysisClient client;
 
         private readonly String projectName = "sched-langservice";

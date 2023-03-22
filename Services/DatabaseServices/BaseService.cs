@@ -36,7 +36,7 @@ namespace HicsChatBot.Services
                 // throw some sort of error
                 string str = await resp.Content.ReadAsStringAsync();
                 string err = JsonObject.Parse(str)["errors"][0].GetValue<string>();
-                throw new Exception("FAILED TO POST: " + err);
+                throw new Exception("FAILED TO GET: " + err);
             }
 
             var jsonResponse = await resp.Content.ReadAsStringAsync();

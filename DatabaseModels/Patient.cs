@@ -12,22 +12,22 @@ namespace HicsChatBot.Model
     */
     public record class Patient : BaseModel<Patient>
     {
-        private int Id { get; set; }
-        private string Nric { get; set; }
-        private string Fullname { get; set; }
-        private string Gender { get; set; }
-        private DateTime Dob { get; set; }
-        private string Address { get; set; }
-        private string Phone { get; set; }
-        private string Title { get; set; }
+        public int? Id { get; set; }
+        public string Nric { get; set; }
+        public string Fullname { get; set; }
+        public string Gender { get; set; }
+        public DateTime? Dob { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
+        public string Title { get; set; }
 
-        public Patient(int id, string nric, string fullname, string gender, string dob, string address, string phone, string title)
+        public Patient(int? id = null, string nric = null, string fullname = null, string gender = null, string dob = null, string address = null, string phone = null, string title = null)
         {
             this.Id = id;
             this.Nric = nric;
             this.Fullname = fullname;
             this.Gender = gender;
-            this.Dob = DateTime.Parse(dob);
+            this.Dob = dob != null ? DateTime.Parse(dob) : null;
             this.Address = address;
             this.Phone = phone;
             this.Title = title;
@@ -67,7 +67,7 @@ namespace HicsChatBot.Model
                 nric = this.Nric,
                 fullname = this.Fullname,
                 gender = this.Gender,
-                dob = this.Dob.ToString("yyyy-MM-dd"),
+                dob = this.Dob?.ToString("yyyy-MM-dd"),
                 address = this.Address,
                 phone = this.Phone,
                 title = this.Title,
@@ -76,7 +76,7 @@ namespace HicsChatBot.Model
 
         public override string ToString()
         {
-            return $"Patient [ id: {this.Id}, nric: {this.Nric}, fullname: {this.Fullname}, gender: {this.Gender}, dob: {this.Dob}, address: ${this.Address}, phone: {this.Phone}, title: {this.Title} ]\n";
+            return $"Patient [ id: {this.Id}, nric: {this.Nric}, fullname: {this.Fullname}, gender: {this.Gender}, dob: {this.Dob}, address: {this.Address}, phone: {this.Phone}, title: {this.Title} ]\n";
         }
     }
 }
