@@ -66,7 +66,7 @@ namespace HicsChatBot.Dialogs
         private static async Task<DialogTurnResult> ConfirmPatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string confirm = (string)stepContext.Result;
-            if (confirm != "yes")
+            if (!(confirm.ToLower().Contains("yes")))
             {
                 return await stepContext.ReplaceDialogAsync(nameof(FetchPatientDialog), cancellationToken: cancellationToken);
             }

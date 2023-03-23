@@ -93,7 +93,7 @@ namespace HicsChatBot.Dialogs
 
         private static async Task<DialogTurnResult> ConfirmContinueCallAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if ((string)stepContext.Result != "yes")
+            if (!((string)stepContext.Result).ToLower().Contains("yes"))
             {
                 await stepContext.Context.SendActivityAsync("Thank you for your time!", cancellationToken: cancellationToken);
                 return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);

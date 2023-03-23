@@ -45,7 +45,7 @@ namespace HicsChatBot.Dialogs
         private static async Task<DialogTurnResult> ConfirmAppointmentAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string confirm = (string)stepContext.Result;
-            if (confirm != "yes")
+            if (!confirm.ToLower().Contains("yes"))
             {
                 return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Would you like to book a different appointment?") }, cancellationToken: cancellationToken);
             }
@@ -57,7 +57,7 @@ namespace HicsChatBot.Dialogs
         private static async Task<DialogTurnResult> OnNotConfirmAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string confirm = (string)stepContext.Result;
-            if (confirm == "yes")
+            if (confirm.ToLower().Contains("yes"))
             {
                 // Book a different appointment
                 return await stepContext.ReplaceDialogAsync(nameof(BookAppointmentDialog), cancellationToken: cancellationToken);

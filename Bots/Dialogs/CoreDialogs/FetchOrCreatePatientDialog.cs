@@ -45,7 +45,7 @@ namespace HicsChatBot.Dialogs
 
         private static async Task<DialogTurnResult> GetOrCreatePatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if ((string)stepContext.Result != "yes")
+            if (!((string)stepContext.Result).ToLower().Contains("yes"))
             {
                 // not registered
                 return await stepContext.BeginDialogAsync(nameof(CreateNewPatientDialog), cancellationToken: cancellationToken);
