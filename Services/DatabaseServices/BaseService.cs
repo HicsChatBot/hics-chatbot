@@ -13,7 +13,7 @@ namespace HicsChatBot.Services
 {
     public class BaseService
     {
-        protected readonly Uri baseAddress = new Uri("DATABASE_ENDPOINT");
+        protected readonly Uri baseAddress = new Uri(System.Environment.GetEnvironmentVariable("DATABASE_ENDPOINT"));
         private readonly HttpClient client;
 
         protected BaseService()
