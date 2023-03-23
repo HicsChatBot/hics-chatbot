@@ -8,7 +8,6 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
-using HicsChatBot.Services;
 using HicsChatBot.Dialogs;
 
 namespace Microsoft.BotBuilderSamples.Bots
@@ -45,6 +44,7 @@ namespace Microsoft.BotBuilderSamples.Bots
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
                     await turnContext.SendActivityAsync(MessageFactory.Text(welcomeText, welcomeText), cancellationToken);
+                    await DialogExtensions.RunAsync(new MainDialog(), turnContext, conversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
                 }
             }
         }

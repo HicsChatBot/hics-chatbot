@@ -31,6 +31,7 @@ namespace HicsChatBot.Dialogs
             // AddDialog(new RequestNricDialog());
             AddDialog(new CreateNewPatientDialog());
             AddDialog(new FetchPatientDialog());
+            AddDialog(new TransferToHumanDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
