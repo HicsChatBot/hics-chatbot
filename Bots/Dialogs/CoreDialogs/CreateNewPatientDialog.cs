@@ -52,6 +52,13 @@ namespace HicsChatBot.Dialogs
             return await stepContext.BeginDialogAsync(nameof(RequestFullnameDialog), cancellationToken: cancellationToken);
         }
 
+        private static async Task<DialogTurnResult> RequestAddressAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            patient.Address ??= (string)stepContext.Result;
+
+            return await stepContext.BeginDialogAsync(nameof(RequestAddressDialog), cancellationToken: cancellationToken);
+        }
+
         private static async Task<DialogTurnResult> GetPatientDataConfirmationAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             patient.Fullname ??= (string)stepContext.Result;

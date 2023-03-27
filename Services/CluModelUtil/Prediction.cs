@@ -123,6 +123,42 @@ namespace HicsChatBot.Services.CluModelUtil
             return null;
         }
 
+        public Entity GetAddressEntity()
+        {
+            foreach (Entity e in this.entities)
+            {
+                if (e.getCategory() == "Address")
+                {
+                    return e;
+                }
+            }
+            return null;
+        }
+
+        public Entity GetDobEntity()
+        {
+            foreach (Entity e in this.entities)
+            {
+                if (e.getCategory() == "DOB")
+                {
+                    return e;
+                }
+            }
+            return null;
+        }
+
+        public Entity GetPhoneNumberEntity()
+        {
+            foreach (Entity e in this.entities)
+            {
+                if (e.getCategory() == "Phone Number")
+                {
+                    return e;
+                }
+            }
+            return null;
+        }
+
         public DoctorSpecializationEntity GetTopSpecialization()
         {
             foreach (Entity e in this.entities)
