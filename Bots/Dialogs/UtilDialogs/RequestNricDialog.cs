@@ -1,7 +1,7 @@
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HicsChatBot.Services;
-using HicsChatBot.Services.CluModelUtil;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 
@@ -39,9 +39,8 @@ namespace HicsChatBot.Dialogs.UtilDialogs
         private static async Task<DialogTurnResult> CompleteAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string query = (string)stepContext.Result;
-            Prediction prediction = clu.predict(query);
 
-            string nric = (string)prediction.GetNricEntity()?.getValue();
+            string nric = getNric(query);
 
             if (nric == null)
             {
@@ -50,6 +49,17 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             }
 
             return await stepContext.EndDialogAsync(nric, cancellationToken);
+        }
+
+        private static string getNric(string text)
+        {
+            text = text.Replace(" ", "").Replace(".", "");
+            text = text.ToUpper();
+
+            Regex r = new Regex(@"(T|S|F|G)0\d{6}[A-Z]", RegexOptions.IgnoreCase);
+            Match m = r.Match(text);
+
+            return m.Success ? m.ToString() : null;
         }
     }
 }
