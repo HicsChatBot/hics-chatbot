@@ -1,27 +1,19 @@
-using System.Text.Json;
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Collections.Generic;
-
 using HicsChatBot.Model;
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.Json.Nodes;
-using System.Net.Mime;
-using System.Text;
-using System.Net.Http.Json;
-using Newtonsoft.Json;
 
 namespace HicsChatBot.Services
 {
     public class PatientsService : BaseService
     {
-        private readonly string patientsAddress = "patients/";
+        private readonly string patientsAddress = "patients";
         public PatientsService() : base() { }
 
         public async Task<List<Patient>> GetAllPatients()
         {
-            string resp = await base.Get(this.patientsAddress + "getAllPatients");
+            string resp = await base.Get(this.patientsAddress + "/getAllPatients");
             JsonNode json = JsonObject.Parse(resp)!;
             JsonArray patientsJson = json!["patients"]!.AsArray();
 
@@ -36,7 +28,11 @@ namespace HicsChatBot.Services
 
         public async Task<Patient> GetPatientByNric(string nric)
         {
-            string resp = await base.Get(this.patientsAddress + "getPatientByNric/" + nric);
+            var uri_params = new Dictionary<string, string> { };
+            uri_params.Add("nric", nric);
+
+            string resp = await base.Get(uri: this.patientsAddress + "/getPatientByNric", uri_params: uri_params);
+
             JsonNode patientJson = JsonObject.Parse(resp)!["patient"];
             return Patient.ToEntity(patientJson);
         }

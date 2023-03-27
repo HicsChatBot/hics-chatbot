@@ -1,13 +1,11 @@
-using System.Text.Json;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using System.Text.Json.Nodes;
 using System.Text;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
 namespace HicsChatBot.Services
 {
@@ -43,6 +41,46 @@ namespace HicsChatBot.Services
             return jsonResponse;
         }
 
+        protected async Task<string> Get(string uri, Dictionary<string, string> uri_params)
+        {
+            List<string> uri_params_xs = new();
+
+            foreach (KeyValuePair<string, string> kvp in uri_params)
+            {
+                uri_params_xs.Add($"{kvp.Key}={kvp.Value}");
+            }
+
+            uri += "?" + String.Join("&", uri_params_xs.ToArray());
+
+            return await Get(uri);
+        }
+
+        public async Task<string> Delete(string uri, object data)
+        {
+            string jsonContent = JsonConvert.SerializeObject(data);
+            HttpContent stringContent = ToStringContent(jsonContent);
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(baseAddress.AbsoluteUri + uri),
+                Content = stringContent,
+            };
+
+            HttpResponseMessage resp = await client.SendAsync(request);
+
+            if (resp.StatusCode != HttpStatusCode.OK)
+            {
+                // throw some sort of error
+                string str = await resp.Content.ReadAsStringAsync();
+                string err = JsonObject.Parse(str)["errors"][0].GetValue<string>();
+                throw new Exception("FAILED TO DELETE: " + err);
+            }
+
+            var jsonResponse = await resp.Content.ReadAsStringAsync();
+            return jsonResponse;
+        }
+
         public async Task<string> Post(string uri, object data)
         {
             string jsonContent = JsonConvert.SerializeObject(data);
@@ -57,8 +95,6 @@ namespace HicsChatBot.Services
                 string err = JsonObject.Parse(str)["errors"][0].GetValue<string>();
                 throw new Exception("FAILED TO POST: " + err);
             }
-
-            // resp.EnsureSuccessStatusCode();
 
             var jsonResponse = await resp.Content.ReadAsStringAsync();
             return jsonResponse;
