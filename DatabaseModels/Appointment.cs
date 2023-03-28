@@ -31,8 +31,6 @@ namespace HicsChatBot.Model
 
         public static new Appointment ToEntity(JsonNode json)
         {
-            Console.WriteLine("to entity");
-            Console.WriteLine(json);
             if (json == null)
             {
                 return null;
@@ -41,11 +39,11 @@ namespace HicsChatBot.Model
             return new Appointment(
                 clinicId: json["clinicId"].GetValue<int>(),
                 roomNumber: json["roomNumber"].GetValue<int>(),
-                patientId: json["patientId"].GetValue<int>(),
+                patientId: json["patientId"]?.GetValue<int>(),
                 startDatetime: json["startDatetime"].GetValue<string>(),
-                apptStatus: json["apptStatus"].GetValue<string>(),
+                apptStatus: json["apptStatus"]?.GetValue<string>(),
                 doctorId: json["doctorId"]?.GetValue<int>(),
-                apptType: json["apptType"].GetValue<string>()
+                apptType: json["apptType"]?.GetValue<string>()
             );
         }
 
