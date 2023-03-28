@@ -1,3 +1,5 @@
+using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HicsChatBot.Model;
@@ -21,11 +23,12 @@ namespace HicsChatBot.Dialogs
             var waterfallSteps = new WaterfallStep[]
             {
                 // Add waterfall steps here
+                // TestReqAsync,
+                // TestRespAsync,
                 FetchOrCreatePatientAsync,
                 OfferHelpAsync,
                 HandleRequestAsync,
-                CheckContinueCallAsync,
-                ConfirmContinueCallAsync,
+                CompleteCallAsync,
             };
 
             // Add named dialogs to DialogSet.
@@ -41,17 +44,13 @@ namespace HicsChatBot.Dialogs
 
         private static async Task<DialogTurnResult> FetchOrCreatePatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if (patient != null)
-            {
-                return await stepContext.NextAsync(cancellationToken: cancellationToken);
-            }
             return await stepContext.BeginDialogAsync(nameof(FetchOrCreatePatientDialog), cancellationToken: cancellationToken);
         }
 
 
         private static async Task<DialogTurnResult> OfferHelpAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            patient ??= (Patient)stepContext.Result;
+            patient = (Patient)stepContext.Result;
 
             string msg = isFirstIteration ? "How can I help you?" : "What else can I help you with?";
             isFirstIteration = false;
@@ -66,6 +65,8 @@ namespace HicsChatBot.Dialogs
             string query = (string)stepContext.Result;
             Prediction prediction = clu.predict(query);
 
+            Console.WriteLine(patient);
+
             if (prediction.GetTopIntent()?.getCategory() == "Book")
             {
                 return await stepContext.BeginDialogAsync(nameof(BookAppointmentDialog), patient, cancellationToken);
@@ -73,7 +74,7 @@ namespace HicsChatBot.Dialogs
             else if (prediction.GetTopIntent()?.getCategory() == "Cancel")
             {
                 await stepContext.Context.SendActivityAsync("Cancelling appointment", cancellationToken: cancellationToken);
-                return await stepContext.ReplaceDialogAsync(nameof(MainDialog), cancellationToken: cancellationToken);
+                return await stepContext.NextAsync(null, cancellationToken: cancellationToken);
             }
             else
             {
@@ -82,23 +83,10 @@ namespace HicsChatBot.Dialogs
             }
         }
 
-        private static async Task<DialogTurnResult> CheckContinueCallAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private static async Task<DialogTurnResult> CompleteCallAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            // After successful / failure to do something (intent)
-            return await stepContext.PromptAsync(
-                    nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text("Do you still need anymore help?") },
-                    cancellationToken);
-        }
-
-        private static async Task<DialogTurnResult> ConfirmContinueCallAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            if (!((string)stepContext.Result).ToLower().Contains("yes"))
-            {
-                await stepContext.Context.SendActivityAsync("Thank you for your time!", cancellationToken: cancellationToken);
-                return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
-            }
-            return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
+            await stepContext.Context.SendActivityAsync("Thank you for your time!", cancellationToken: cancellationToken);
+            return await stepContext.CancelAllDialogsAsync(cancellationToken: cancellationToken);
         }
     }
 }
