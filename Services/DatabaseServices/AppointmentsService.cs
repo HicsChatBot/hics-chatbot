@@ -3,6 +3,7 @@ using HicsChatBot.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.Json.Nodes;
+using System;
 
 namespace HicsChatBot.Services
 {
@@ -73,6 +74,18 @@ namespace HicsChatBot.Services
             string resp = await base.Delete(uri: this.appointmentsAddress + "/deleteUpcomingAppointment", uri_params);
 
             JsonNode apptJson = JsonObject.Parse(resp)!["appointment"];
+            return Appointment.ToEntity(apptJson);
+        }
+
+        public async Task<Appointment> FindNextAvailableSubsidizedAppointment(string specialization, string apptType)
+        {
+            var uri_params = new Dictionary<string, string> { };
+            uri_params.Add("specialization", specialization);
+            uri_params.Add("apptType", apptType);
+
+            string resp = await base.Get(uri: this.appointmentsAddress + "/findNextAvailableSubsidizedAppointment", uri_params: uri_params);
+
+            JsonNode apptJson = JsonObject.Parse(resp)!["apptData"];
             return Appointment.ToEntity(apptJson);
         }
     }
