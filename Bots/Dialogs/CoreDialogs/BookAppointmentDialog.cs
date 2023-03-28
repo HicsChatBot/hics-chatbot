@@ -17,6 +17,7 @@ namespace HicsChatBot.Dialogs
         private static readonly DoctorsService doctorsService = new DoctorsService();
         private static readonly ClinicsService clinicsService = new ClinicsService();
         private static FollowUpAppointmentData followUpAppointmentData;
+        private static NewAppointmentData newAppointmentData;
         private static Appointment newAppt;
 
         public BookAppointmentDialog() : base(nameof(BookAppointmentDialog))
@@ -35,6 +36,7 @@ namespace HicsChatBot.Dialogs
             AddDialog(new TextPrompt(nameof(TextPrompt)));
 
             AddDialog(new BookFollowUpAppointmentDialog());
+            AddDialog(new BookNewAppointmentDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
@@ -43,6 +45,7 @@ namespace HicsChatBot.Dialogs
         private static async Task<DialogTurnResult> GetAppointmentTypeAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             followUpAppointmentData = new FollowUpAppointmentData((Patient)stepContext.Options);
+            newAppointmentData = new NewAppointmentData((Patient)stepContext.Options, null, null);
 
             followUpAppointmentData.lastAppt = await apptsService.GetMostRecentPastAppointment(followUpAppointmentData.patient.Id.ToString());
 
@@ -77,8 +80,7 @@ namespace HicsChatBot.Dialogs
             }
             else if (query.Contains("new"))
             {
-                await stepContext.Context.SendActivityAsync(MessageFactory.Text("Creating new appt... Done!"), cancellationToken);
-                return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+                return await stepContext.BeginDialogAsync(nameof(BookNewAppointmentDialog), newAppointmentData, cancellationToken);
             }
             else
             {

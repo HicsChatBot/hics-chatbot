@@ -23,7 +23,7 @@ namespace HicsChatBot.Dialogs
             var waterfallSteps = new WaterfallStep[]
             {
                 // Add waterfall steps here
-                GetAppointmentTypeAsync,
+                FindAppointmentAsync,
             };
 
             // Add named dialogs to DialogSet.
@@ -34,7 +34,7 @@ namespace HicsChatBot.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
         }
 
-        private static async Task<DialogTurnResult> GetAppointmentTypeAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private static async Task<DialogTurnResult> FindAppointmentAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             followUpAppointmentData = (FollowUpAppointmentData)stepContext.Options;
 
