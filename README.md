@@ -1,4 +1,78 @@
-﻿# EchoBot
+﻿## HICS ChatBot
+Simple chatbot that is able to handle appointment management for healthcare services. 
+[Try it out!](https://hics-chatbot.vercel.app/)
+
+<br>Integrated with:
+- Azure's ConversationalLanguageUnderstanding Model
+- PostgreSQL database (deployed on Render)
+
+## Bot flow
+1. "Is caller registered in the database?"
+    1. Yes: Requests for NRIC to **fetch** the patient from the database (eg. )
+    1. No: Creates a patient in our database (and continues execution with this new patientData) *– (not implemented yet, currently most of the fields are hard-coded in)*
+1. "How can I help you?"
+    1. "Book" 
+        i. "Follow up appt or new appt?" 
+
+    1. "Cancel" *– (not implemented yet, )*
+    1. "Reschedule" *– (not implemented yet, just executes a cancel and then a book)*
+1. "Thank you for your time" -> ends conversation
+
+
+#### (2a) "Book"
+1. (fetches most recent appt data if it exists)
+1. "Follow up or new appt" (if recent appt exists), othewise: only "new appt"
+1. "Specialized treatment or general?" -> sets: specialization (see Specializations for possible predictions)
+1. "Private or subsidized?"
+    1. "Subsidized" -> doctorId = null
+    1. "Private" -> "Consultant, specialist or senior consultant" -> get first doctorId that matches (ie. specialization & ranking)
+1. Find first available datetime (given: doctorId, specialization) 
+1. Confirm? 
+    1. Y -> create new appointment
+    1. N -> ends dialog
+
+---
+
+### Database Data
+* Specializations: 
+    | id |    name    |
+    |----|------------|
+    | 1  | cardiology |
+    | 2  | nephrology |
+    | 3  | neurology  |
+    | 4  | oncology   |
+    | 5  | pediatrics |
+    | 6  | general    |
+
+* Hospitals:
+
+    | id |            name            |                         location                          | hospital_type |
+    |----|----------------------------|-----------------------------------------------------------|---------------|
+    |  1 | Singapore General Hospital | Singapore General Hospital, Outram Road, Singapore 169608 | acute         |
+    |  2 | Tan Tock Seng Hospital     | 11 Jalan Tan Tock Seng, Singapore 308433                  | acute         |
+    |  3 | Bright Vision Hospital     | 5 Lorong Napiri, Singapore 547530                         | community     |
+
+
+### Database API endpoints
+
+* [(for testing purposes!) Resets the mock database](https://hicschatbot-dbservice.onrender.com/admin/resetDatabase)
+    - POST request, no body, resets database
+
+* [get all patients](https://hicschatbot-dbservice.onrender.com/patients/getAllPatients)
+    - gets a list of all patients in the database
+
+* [get all doctors](https://hicschatbot-dbservice.onrender.com/doctors/getAllDoctors)
+    - gets a list of all doctors in the database
+
+* [get all appointments](https://hicschatbot-dbservice.onrender.com/appointments/getAllAppointments)
+    - gets a list of all appointments in the database
+
+
+
+
+---
+
+# EchoBot
 
 Bot Framework v4 echo bot sample.
 
