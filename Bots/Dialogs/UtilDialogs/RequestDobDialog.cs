@@ -35,10 +35,10 @@ namespace HicsChatBot.Dialogs.UtilDialogs
 
         public static async Task<DialogTurnResult> CompleteAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            string query = (string) stepContext.Result;
-            Prediction prediction = clu.predict(query);
+            string dob = (string) stepContext.Result;
+            //Prediction prediction = clu.predict(query); // TODO: Need to be fixed
 
-            string dob = (string) prediction.GetDobEntity()?.getValue();
+            //string dob = (string) prediction.GetDobEntity()?.getValue();
 
             if (dob == null)
             {

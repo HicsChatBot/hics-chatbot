@@ -35,10 +35,10 @@ namespace HicsChatBot.Dialogs.UtilDialogs
 
         private static async Task<DialogTurnResult> CompleteAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            string query = (string) stepContext.Result;
-            Prediction prediction = clu.predict(query);
+            string phoneNumber = (string) stepContext.Result;
+            //Prediction prediction = clu.predict(query); // TODO: Need to be fixed
 
-            string phoneNumber = (string) prediction.GetPhoneNumberEntity()?.getValue();
+            //string phoneNumber = (string) prediction.GetPhoneNumberEntity()?.getValue();
 
             if (phoneNumber == null)
             {
