@@ -10,12 +10,13 @@ Simple chatbot that is able to handle appointment management for healthcare serv
 1. "Is caller registered in the database?"
     1. Yes: Requests for NRIC to **fetch** the patient from the database (eg. )
     1. No: Creates a patient in our database (and continues execution with this new patientData) *– (not implemented yet, currently most of the fields are hard-coded in)*
+
 1. "How can I help you?"
     1. "Book" 
         i. "Follow up appt or new appt?" 
-
-    1. "Cancel" *– (not implemented yet, )*
+    1. "Cancel"
     1. "Reschedule" *– (not implemented yet, just executes a cancel and then a book)*
+    1. "Don't understand" – Direct to human 
 1. "Thank you for your time" -> ends conversation
 
 
@@ -31,9 +32,39 @@ Simple chatbot that is able to handle appointment management for healthcare serv
     1. Y -> create new appointment
     1. N -> ends dialog
 
+#### (2a) "Cancel"
+1. (fetches next upcoming appt data if it exists)
+1. If doesn't exist:
+    1. "No upcoming appts. Would you like to book an appointment instead?"
+        1. Y -> navigate to `BookAppointment`
+        1. N -> End
+1. If exists:
+    1. Confirm cancel this appointment?
+        1. Y –> cancel
+        1. N -> End
+
 ---
 
 ### Database Data
+
+* (default) Patients (you will need the corresponding NRICs):
+    1. Patients with 1 past appointment & 1 upcoming appointments:
+        1. patientId = 19: Elfrieda Lockless, NRIC = T0996338Z
+        1. patientId = 20: Marie Hogsden    , NRIC = T0381322Y
+
+    1. Patients with 1 past appointment but no upcoming appointments:
+        1. patientId = 21: Wynn Wrathmall , NRIC = T0784791Y
+        1. patientId = 22: Marilin Kilty  , NRIC = T0506732Z
+
+    1. Patients with no past appointments but with 1 upcoming appointment:
+        1. patientId = 23: Gunner Pairpoint , NRIC = T0945015Y
+        1. patientId = 24: Ky Pritchard     , NRIC = T0502317Z
+
+    1. Patients with no past & no upcoming appointments: (ie. patient data is just in DB)
+        1. patientId = 25: Peggi Handy     , NRIC = T0803758X
+        1. patientId = 26: Meredith Goosey , NRIC = T0836148V
+
+
 * Specializations: 
     | id |    name    |
     |----|------------|
@@ -67,7 +98,11 @@ Simple chatbot that is able to handle appointment management for healthcare serv
 * [get all appointments](https://hicschatbot-dbservice.onrender.com/appointments/getAllAppointments)
     - gets a list of all appointments in the database
 
+#### Snapshots of the Mockdata for the database:
+(initial state, immediately after /resetDatabase API endpoint is called)
 
+**Persons**
+![Table: Appointments](./public/images/mockdata/appointments.png)
 
 
 ---
