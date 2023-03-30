@@ -23,6 +23,9 @@ namespace HicsChatBot.Dialogs
                 // Add waterfall steps here
                 RequestNricAsync,
                 RequestFullnameAsync,
+                RequestAddressAsync,
+                RequestDobAsync,
+                RequestPhoneNumberAsync,
                 GetPatientDataConfirmationAsync,
                 ConfirmPatientAsync,
             };
@@ -33,6 +36,9 @@ namespace HicsChatBot.Dialogs
 
             AddDialog(new RequestNricDialog());
             AddDialog(new RequestFullnameDialog());
+            AddDialog(new RequestAddressDialog());
+            AddDialog(new RequestDobDialog());
+            AddDialog(new RequestPhoneNumberDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
@@ -52,13 +58,34 @@ namespace HicsChatBot.Dialogs
             return await stepContext.BeginDialogAsync(nameof(RequestFullnameDialog), cancellationToken: cancellationToken);
         }
 
-        private static async Task<DialogTurnResult> GetPatientDataConfirmationAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private static async Task<DialogTurnResult> RequestAddressAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             patient.Fullname ??= (string)stepContext.Result;
 
+            return await stepContext.BeginDialogAsync(nameof(RequestAddressDialog), cancellationToken: cancellationToken);
+        }
+
+        private static async Task<DialogTurnResult> RequestDobAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            patient.Address ??= (string)stepContext.Result;
+
+            return await stepContext.BeginDialogAsync(nameof(RequestDobDialog), cancellationToken: cancellationToken);
+        }
+
+        private static async Task<DialogTurnResult> RequestPhoneNumberAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            patient.Dob ??= DateTime.Parse((string)stepContext.Result);  // TODO: Probably need a try catch because DateTime Parse throws an error when an invalid date is specified
+
+            return await stepContext.BeginDialogAsync(nameof(RequestPhoneNumberDialog), cancellationToken: cancellationToken);
+        }
+
+        private static async Task<DialogTurnResult> GetPatientDataConfirmationAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            patient.Phone ??= (string)stepContext.Result;
+
             return await stepContext.PromptAsync(
                     nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text($"Alright, so just to check: your nric is {patient.Nric}, your full name is {patient.Fullname}, etc. Can you confirm that this information is correct?") },
+                    new PromptOptions { Prompt = MessageFactory.Text($"Alright, so just to confirm: your NRIC is {patient.Nric}, your full name is {patient.Fullname}, your address is {patient.Address}, your date of birth is {patient.Dob}, and your phone number is {patient.Phone}. Can you confirm that this information is correct?") },
                     cancellationToken: cancellationToken);
         }
 
@@ -74,10 +101,7 @@ namespace HicsChatBot.Dialogs
             await stepContext.Context.SendActivityAsync($"Please give me a moment to register your data into our system...", cancellationToken: cancellationToken);
 
             // TODO: add more util dialogs (and remove these hard-coded patient data)
-            patient.Address = "Blk 123 Ang mo Kio Street 11";
-            patient.Dob = DateTime.Parse("1980-10-09");
             patient.Gender = "M";
-            patient.Phone = "+65 91231234";
             patient.Title = "Mr";
 
             Patient createdPatient = await patientsService.CreatePatient(patient);
