@@ -102,7 +102,31 @@ Simple chatbot that is able to handle appointment management for healthcare serv
 (initial state, immediately after /resetDatabase API endpoint is called)
 
 **Persons**
+![Table: Persons](./public/images/mockdata/persons.png)
+
+**Doctors**
+![Table: Doctors](./public/images/mockdata/doctors.png)
+
+**Patients**
+![Table: Patients](./public/images/mockdata/patients.png)
+
+**Appointments**
 ![Table: Appointments](./public/images/mockdata/appointments.png)
+
+**Clinic**
+1. more descriptive representation of data:
+![Table: Clinics (Joined with Hospital and Specializations)](./public/images/mockdata/clinics_joinedData.png)
+
+1. table data
+![Table: Clinics](./public/images/mockdata/clinics_data.png)
+
+**DoctorsSpecializations**
+1. more descriptive representation of data:
+![Table: DoctorsSpecializations (Joined with Doctors, Persons and Specializations)](./public/images/mockdata/doctorsspecializations_joinedData.png)
+
+1. table data
+![Table: DoctorsSpecializations](./public/images/mockdata/doctorsspecializations_data.png)
+
 
 
 ---
