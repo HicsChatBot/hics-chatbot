@@ -13,7 +13,6 @@ namespace HicsChatBot.Dialogs
     public class MainDialog : ComponentDialog
     {
         private static readonly CluModelService clu = CluModelService.inst();
-        private static bool isFirstIteration = true;
         private static Patient patient = null;
 
         public MainDialog() : base(nameof(MainDialog))
@@ -37,6 +36,7 @@ namespace HicsChatBot.Dialogs
 
             AddDialog(new FetchOrCreatePatientDialog());
             AddDialog(new BookAppointmentDialog());
+            AddDialog(new TransferToHumanDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
@@ -44,7 +44,7 @@ namespace HicsChatBot.Dialogs
 
         private static async Task<DialogTurnResult> FetchOrCreatePatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            return await stepContext.BeginDialogAsync(nameof(FetchOrCreatePatientDialog), cancellationToken: cancellationToken);
+            return await stepContext.BeginDialogAsync(nameof(FetchOrCreatePatientDialog), 2, cancellationToken: cancellationToken);
         }
 
 
@@ -52,11 +52,14 @@ namespace HicsChatBot.Dialogs
         {
             patient = (Patient)stepContext.Result;
 
-            string msg = isFirstIteration ? "How can I help you?" : "What else can I help you with?";
-            isFirstIteration = false;
+            if (patient == null)
+            {
+                return await stepContext.ReplaceDialogAsync(nameof(TransferToHumanDialog), cancellationToken: cancellationToken);
+            }
+
             return await stepContext.PromptAsync(
                     nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text(msg) },
+                    new PromptOptions { Prompt = MessageFactory.Text("How can I help you?") },
                     cancellationToken);
         }
 
@@ -79,7 +82,7 @@ namespace HicsChatBot.Dialogs
             else
             {
                 await stepContext.Context.SendActivityAsync("I don't understand...", cancellationToken: cancellationToken);
-                return await stepContext.ReplaceDialogAsync(nameof(MainDialog), cancellationToken: cancellationToken);
+                return await stepContext.ReplaceDialogAsync(nameof(TransferToHumanDialog), cancellationToken: cancellationToken);
             }
         }
 

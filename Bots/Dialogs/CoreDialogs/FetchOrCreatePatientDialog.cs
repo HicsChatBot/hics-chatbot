@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using HicsChatBot.Model;
@@ -12,7 +13,7 @@ namespace HicsChatBot.Dialogs
         private static readonly CluModelService clu = CluModelService.inst();
         private static readonly int MaxNumRetryAttempts = 2;
 
-        private static int numRetryAttempts = MaxNumRetryAttempts;
+        private static int numRetryAttempts;
 
         public FetchOrCreatePatientDialog() : base(nameof(FetchOrCreatePatientDialog))
         {
@@ -38,6 +39,7 @@ namespace HicsChatBot.Dialogs
         }
         private static async Task<DialogTurnResult> IsPatientRegisteredAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            numRetryAttempts = (int)stepContext.Options;
             return await stepContext.PromptAsync(
                     nameof(TextPrompt),
                     new PromptOptions { Prompt = MessageFactory.Text("Have you registered your patient data before?") },
@@ -63,12 +65,11 @@ namespace HicsChatBot.Dialogs
             {
                 if (numRetryAttempts <= 0)
                 {
-                    return await stepContext.ReplaceDialogAsync(nameof(TransferToHumanDialog), cancellationToken: cancellationToken);
+                    return await stepContext.EndDialogAsync(null, cancellationToken);
                 }
                 await stepContext.Context.SendActivityAsync("Let's try that again.", cancellationToken: cancellationToken);
-                numRetryAttempts -= 1;
 
-                return await stepContext.ReplaceDialogAsync(nameof(FetchOrCreatePatientDialog), null, cancellationToken);
+                return await stepContext.ReplaceDialogAsync(nameof(FetchOrCreatePatientDialog), numRetryAttempts - 1, cancellationToken);
             }
 
             return await stepContext.EndDialogAsync(patient, cancellationToken);
