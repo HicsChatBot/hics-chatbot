@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using HicsChatBot.Dialogs.UtilDialogs;
 using HicsChatBot.Model;
 using HicsChatBot.Services;
 using Microsoft.Bot.Builder;
@@ -11,7 +12,6 @@ namespace HicsChatBot.Dialogs
     public class FetchOrCreatePatientDialog : ComponentDialog
     {
         private static readonly CluModelService clu = CluModelService.inst();
-        private static readonly int MaxNumRetryAttempts = 2;
 
         private static int numRetryAttempts;
 
@@ -29,6 +29,8 @@ namespace HicsChatBot.Dialogs
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
             AddDialog(new TextPrompt(nameof(TextPrompt)));
 
+            AddDialog(new RequestConfirmationDialog());
+
             // AddDialog(new RequestNricDialog());
             AddDialog(new CreateNewPatientDialog());
             AddDialog(new FetchPatientDialog());
@@ -40,15 +42,13 @@ namespace HicsChatBot.Dialogs
         private static async Task<DialogTurnResult> IsPatientRegisteredAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             numRetryAttempts = (int)stepContext.Options;
-            return await stepContext.PromptAsync(
-                    nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text("Have you registered your patient data before?") },
-                    cancellationToken);
+            return await stepContext.BeginDialogAsync(nameof(RequestConfirmationDialog), "Have you registered your patient data before?", cancellationToken);
         }
 
         private static async Task<DialogTurnResult> GetOrCreatePatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if (!((string)stepContext.Result).ToLower().Contains("yes"))
+            bool hasRegisteredBefore = (bool)stepContext.Result;
+            if (!hasRegisteredBefore)
             {
                 // not registered
                 return await stepContext.BeginDialogAsync(nameof(CreateNewPatientDialog), cancellationToken: cancellationToken);

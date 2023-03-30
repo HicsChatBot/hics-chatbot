@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using HicsChatBot.Dialogs.CustomDialogData;
+using HicsChatBot.Dialogs.UtilDialogs;
 using HicsChatBot.Model;
 using HicsChatBot.Services;
 using Microsoft.Bot.Builder;
@@ -34,6 +35,8 @@ namespace HicsChatBot.Dialogs
             // Add named dialogs to DialogSet.
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
             AddDialog(new TextPrompt(nameof(TextPrompt)));
+
+            AddDialog(new RequestConfirmationDialog());
 
             AddDialog(new BookFollowUpAppointmentDialog());
             AddDialog(new BookNewAppointmentDialog());
@@ -93,24 +96,29 @@ namespace HicsChatBot.Dialogs
             newAppt = (Appointment)stepContext.Result;
             if (newAppt == null)
             {
+                // Should never reach here... (only reach if no appointment is ever available)
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("No Appt Data found... encountered some error :(. Retry!"), cancellationToken);
                 return await stepContext.ReplaceDialogAsync(nameof(BookAppointmentDialog), followUpAppointmentData.patient, cancellationToken: cancellationToken);
             }
             Clinic newClinic = await clinicsService.GetClinic(newAppt.ClinicId.ToString());
 
-            return await stepContext.PromptAsync(
-                nameof(TextPrompt),
-                new PromptOptions { Prompt = MessageFactory.Text($"The earliest I can give you is {newAppt.StartDatetime} at {newClinic.ClinicHospital.HospitalName}, {newClinic.ClinicSpecialization.SpecializationName} Clinic, Room {newAppt.RoomNumber}, will that work for you?") },
-                cancellationToken: cancellationToken);
+            return await stepContext.BeginDialogAsync(
+                nameof(RequestConfirmationDialog),
+                $"The earliest I can give you is {newAppt.StartDatetime} at {newClinic.ClinicHospital.HospitalName}, {newClinic.ClinicSpecialization.SpecializationName} Clinic, Room {newAppt.RoomNumber}. Will that work for you?",
+                cancellationToken
+            );
         }
 
         private static async Task<DialogTurnResult> ConfirmAppointmentAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            string confirm = (string)stepContext.Result;
-            if (confirm.ToLower().Contains("yes"))
+            bool hasConfirmedAppointment = (bool)stepContext.Result;
+            if (hasConfirmedAppointment)
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Please give me a moment while I book the appointment..."), cancellationToken);
-                await apptsService.CreateAppointment(newAppt);
+                Appointment bookedAppt = await apptsService.CreateAppointment(newAppt);
+                Clinic bookedClinic = await clinicsService.GetClinic(bookedAppt.ClinicId.ToString());
+
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Thank you for your patience, I have booked your appointment for {bookedAppt.StartDatetime} at {bookedClinic.ClinicHospital.HospitalName}. An SMS will be sent to you closer to the date."), cancellationToken);
             }
             return await stepContext.EndDialogAsync(null, cancellationToken);
         }

@@ -62,9 +62,21 @@ namespace HicsChatBot.Services.CluModelUtil
                     double confidenceScore = confidenceScoreJson.GetSingle();
 
                     Entity e;
-                    if (this.specializations.Contains(category))
+                    if (category == "Specialization")
                     {
-                        e = new DoctorSpecializationEntity(category, text, confidenceScore);
+                        if (ent.GetProperty("extraInformation").GetArrayLength() == 0 || !ent.GetProperty("extraInformation")[0].TryGetProperty("key", out JsonElement specializationJson))
+                        {
+                            continue;
+                        }
+                        e = new DoctorSpecializationEntity(category, text, confidenceScore, specializationJson.ToString());
+                    }
+                    else if (category == "Agreement")
+                    {
+                        if (ent.GetProperty("resolutions").GetArrayLength() == 0 || !ent.GetProperty("resolutions")[0].TryGetProperty("value", out JsonElement booleanJson))
+                        {
+                            continue;
+                        }
+                        e = new AgreementEntity(category, text, confidenceScore, booleanJson.GetBoolean());
                     }
                     else if (category == "DateTime")
                     {
@@ -130,6 +142,19 @@ namespace HicsChatBot.Services.CluModelUtil
                 if (e.GetType() == typeof(DoctorSpecializationEntity))
                 {
                     return (DoctorSpecializationEntity)e;
+                }
+            }
+            // Defaults to "general" doctor.
+            return new DoctorSpecializationEntity("Specialization", "general", 1, "general");
+        }
+
+        public AgreementEntity GetAgreement()
+        {
+            foreach (Entity e in this.entities)
+            {
+                if (e.GetType() == typeof(AgreementEntity))
+                {
+                    return (AgreementEntity)e;
                 }
             }
             return null;

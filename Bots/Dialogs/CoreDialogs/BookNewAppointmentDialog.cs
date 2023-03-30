@@ -60,6 +60,7 @@ namespace HicsChatBot.Dialogs
             {
                 newAppointmentData.specialization = (string)stepContext.Result;
             }
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Ok, let me look for a doctor that is specialized in {newAppointmentData.specialization}."), cancellationToken);
 
             if (newAppointmentData.ranking != null)
             {

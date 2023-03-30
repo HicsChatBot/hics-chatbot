@@ -14,7 +14,7 @@ namespace HicsChatBot.Dialogs
         private static readonly CluModelService clu = CluModelService.inst();
         private static readonly PatientsService patientsService = new PatientsService();
 
-        private static readonly Patient patient = new Patient();
+        private static Patient patient = new Patient();
 
         public CreateNewPatientDialog() : base(nameof(CreateNewPatientDialog))
         {
@@ -31,6 +31,7 @@ namespace HicsChatBot.Dialogs
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
             AddDialog(new TextPrompt(nameof(TextPrompt)));
 
+            AddDialog(new RequestConfirmationDialog());
             AddDialog(new RequestNricDialog());
             AddDialog(new RequestFullnameDialog());
 
@@ -40,6 +41,7 @@ namespace HicsChatBot.Dialogs
 
         private static async Task<DialogTurnResult> RequestNricAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            patient = new Patient();
             await stepContext.Context.SendActivityAsync("Let's first register you into our system.", cancellationToken: cancellationToken);
 
             return await stepContext.BeginDialogAsync(nameof(RequestNricDialog), cancellationToken: cancellationToken);
@@ -56,17 +58,18 @@ namespace HicsChatBot.Dialogs
         {
             patient.Fullname ??= (string)stepContext.Result;
 
-            return await stepContext.PromptAsync(
-                    nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text($"Alright, so just to check: your nric is {patient.Nric}, your full name is {patient.Fullname}, etc. Can you confirm that this information is correct?") },
-                    cancellationToken: cancellationToken);
+            return await stepContext.BeginDialogAsync(
+                nameof(RequestConfirmationDialog),
+                $"Alright, so just to check: your nric is {patient.Nric}, your full name is {patient.Fullname}, etc. Can you confirm that this information is correct?",
+                cancellationToken
+            );
         }
 
         // If caller confirmed "yes", create the new patient in the database.
         private static async Task<DialogTurnResult> ConfirmPatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            string confirm = (string)stepContext.Result;
-            if (!(confirm.ToLower().Contains("yes")))
+            bool hasConfirmedIdentity = (bool)stepContext.Result;
+            if (!hasConfirmedIdentity)
             {
                 return await stepContext.ReplaceDialogAsync(nameof(FetchPatientDialog), cancellationToken: cancellationToken);
             }

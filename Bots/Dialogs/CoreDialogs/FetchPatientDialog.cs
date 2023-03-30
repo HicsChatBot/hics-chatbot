@@ -54,15 +54,17 @@ namespace HicsChatBot.Dialogs
             }
 
             patient = p;
-            return await stepContext.PromptAsync(
-                    nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text($"Are you {patient.Title} {patient.Fullname}?") },
-                    cancellationToken: cancellationToken);
+            return await stepContext.BeginDialogAsync(
+                nameof(RequestConfirmationDialog),
+                $"Are you {patient.Title} {patient.Fullname}?",
+                cancellationToken
+            );
         }
 
         private static async Task<DialogTurnResult> ConfirmPatientAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if (!((string)stepContext.Result).ToLower().Contains("yes"))
+            bool hasConfirmedIdentity = (bool)stepContext.Result;
+            if (!hasConfirmedIdentity)
             {
                 return await stepContext.ReplaceDialogAsync(nameof(FetchPatientDialog), cancellationToken: cancellationToken);
             }

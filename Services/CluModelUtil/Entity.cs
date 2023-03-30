@@ -64,15 +64,43 @@ namespace HicsChatBot.Services.CluModelUtil
         }
     }
 
-    public class DoctorSpecializationEntity : Entity
+    public class AgreementEntity : Entity
     {
-        public DoctorSpecializationEntity(string category, string text, double confidenceScore) :
+        private bool resolution;
+        public AgreementEntity(string category, string text, double confidenceScore, bool resolution) :
                 base(category, text, confidenceScore)
-        { }
+        {
+            this.resolution = resolution;
+        }
 
         public override object getValue()
         {
-            return base.getCategory();
+            return this.resolution;
+        }
+
+        public override string ToString()
+        {
+            return $"Entity [ category: {base.getCategory()}, text: {base.getText()}, confidenceScore: {base.getConfidenceScore()}, resolution: {this.resolution} ]\n";
+        }
+    }
+
+    public class DoctorSpecializationEntity : Entity
+    {
+        private string key;
+        public DoctorSpecializationEntity(string category, string text, double confidenceScore, string key) :
+                base(category, text, confidenceScore)
+        {
+            this.key = key.ToLower();
+        }
+
+        public override object getValue()
+        {
+            return this.key;
+        }
+
+        public override string ToString()
+        {
+            return $"Entity [ category: {base.getCategory()}, text: {base.getText()}, confidenceScore: {base.getConfidenceScore()}, key: {this.key} ]\n";
         }
     }
 }
