@@ -88,5 +88,23 @@ namespace HicsChatBot.Services
             JsonNode apptJson = JsonObject.Parse(resp)!["apptData"];
             return Appointment.ToEntity(apptJson);
         }
+
+        public async Task<Appointment> FindNextAvailablePrivateAppointment(string specialization, string apptType, int? doctorId)
+        {
+            if (doctorId == null)
+            {
+                return null;
+            }
+
+            var uri_params = new Dictionary<string, string> { };
+            uri_params.Add("specialization", specialization);
+            uri_params.Add("apptType", apptType);
+            uri_params.Add("doctorId", doctorId.ToString());
+
+            string resp = await base.Get(uri: this.appointmentsAddress + "/findNextAvailablePrivateAppointment", uri_params: uri_params);
+
+            JsonNode apptJson = JsonObject.Parse(resp)!["apptData"];
+            return Appointment.ToEntity(apptJson);
+        }
     }
 }

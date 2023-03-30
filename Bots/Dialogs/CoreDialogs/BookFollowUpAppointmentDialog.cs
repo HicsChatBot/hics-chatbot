@@ -55,10 +55,16 @@ namespace HicsChatBot.Dialogs
                 return await stepContext.EndDialogAsync(newAppt, cancellationToken);
             }
 
-            // not subsidized
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"No private doctor appointment found."), cancellationToken);
+            newAppt = await apptsService.FindNextAvailablePrivateAppointment(
+                followUpAppointmentData.lastClinic.ClinicSpecialization.SpecializationName,
+                "follow up",
+                followUpAppointmentData.lastAppt.DoctorId
+            );
 
-            return await stepContext.EndDialogAsync(null, cancellationToken);
+            newAppt.PatientId = p.Id;
+            newAppt.ApptStatus = "upcoming";
+
+            return await stepContext.EndDialogAsync(newAppt, cancellationToken);
         }
     }
 }

@@ -95,14 +95,18 @@ namespace HicsChatBot.Dialogs
 
             List<Doctor> doctors = await doctorsService.GetDoctorsBySpecializationAndRanking(newAppointmentData.specialization, newAppointmentData.ranking);
 
-            Console.WriteLine(doctors);
-
             Doctor d = doctors[0];
 
-            // not subsidized
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Private doctor found: {d}"), cancellationToken);
+            newAppt = await apptsService.FindNextAvailablePrivateAppointment(
+                    newAppointmentData.specialization,
+                    "first consult",
+                    d.Id
+                );
 
-            return await stepContext.EndDialogAsync(null, cancellationToken);
+            newAppt.PatientId = p.Id;
+            newAppt.ApptStatus = "upcoming";
+
+            return await stepContext.EndDialogAsync(newAppt, cancellationToken);
         }
     }
 }
