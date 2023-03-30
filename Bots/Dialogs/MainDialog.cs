@@ -37,6 +37,7 @@ namespace HicsChatBot.Dialogs
             AddDialog(new FetchOrCreatePatientDialog());
             AddDialog(new BookAppointmentDialog());
             AddDialog(new TransferToHumanDialog());
+            AddDialog(new CancelAppointmentDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
@@ -76,8 +77,7 @@ namespace HicsChatBot.Dialogs
             }
             else if (prediction.GetTopIntent()?.getCategory() == "Cancel")
             {
-                await stepContext.Context.SendActivityAsync("Cancelling appointment", cancellationToken: cancellationToken);
-                return await stepContext.NextAsync(null, cancellationToken: cancellationToken);
+                return await stepContext.BeginDialogAsync(nameof(CancelAppointmentDialog), patient, cancellationToken);
             }
             else
             {
