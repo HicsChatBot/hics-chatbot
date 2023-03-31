@@ -51,13 +51,13 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             {
                 return await stepContext.PromptAsync(
                     nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text($"Would you like to see a consultant, specialist of senior consultant?") },
+                    new PromptOptions { Prompt = MessageFactory.Text($"Would you like to see a consultant, specialist or senior consultant?") },
                     cancellationToken);
             }
             else
             {
                 await stepContext.Context.SendActivityAsync("I didn't quite get that, let's try again.", cancellationToken: cancellationToken);
-                return await stepContext.ReplaceDialogAsync(nameof(RequestSpecializationDialog), cancellationToken: cancellationToken);
+                return await stepContext.ReplaceDialogAsync(nameof(RequestRankingDialog), cancellationToken: cancellationToken);
             }
         }
 
@@ -82,7 +82,7 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             else
             {
                 await stepContext.Context.SendActivityAsync("I didn't quite get that, let's try again.", cancellationToken: cancellationToken);
-                return await stepContext.ReplaceDialogAsync(nameof(RequestSpecializationDialog), cancellationToken: cancellationToken);
+                return await stepContext.ReplaceDialogAsync(nameof(RequestRankingDialog), cancellationToken: cancellationToken);
             }
         }
     }

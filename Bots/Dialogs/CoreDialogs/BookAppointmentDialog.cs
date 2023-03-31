@@ -41,6 +41,8 @@ namespace HicsChatBot.Dialogs
             AddDialog(new BookFollowUpAppointmentDialog());
             AddDialog(new BookNewAppointmentDialog());
 
+            AddDialog(new TransferToHumanDialog());
+
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
         }
@@ -97,14 +99,14 @@ namespace HicsChatBot.Dialogs
             if (newAppt == null)
             {
                 // Should never reach here... (only reach if no appointment is ever available)
-                await stepContext.Context.SendActivityAsync(MessageFactory.Text("No Appt Data found... encountered some error :(. Retry!"), cancellationToken);
-                return await stepContext.ReplaceDialogAsync(nameof(BookAppointmentDialog), followUpAppointmentData.patient, cancellationToken: cancellationToken);
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text("I am unable to find an available appointment slot."), cancellationToken);
+                return await stepContext.ReplaceDialogAsync(nameof(TransferToHumanDialog), followUpAppointmentData.patient, cancellationToken: cancellationToken);
             }
             Clinic newClinic = await clinicsService.GetClinic(newAppt.ClinicId.ToString());
 
             return await stepContext.BeginDialogAsync(
                 nameof(RequestConfirmationDialog),
-                $"The earliest I can give you is {newAppt.StartDatetime} at {newClinic.ClinicHospital.HospitalName}, {newClinic.ClinicSpecialization.SpecializationName} Clinic, Room {newAppt.RoomNumber}. Will that work for you?",
+                $"The earliest I can give you is {newAppt.StartDatetime} at {newClinic.ClinicHospital.HospitalName}, {newClinic.ClinicSpecialization.SpecializationName} clinic, room {newAppt.RoomNumber}. Will that work for you?",
                 cancellationToken
             );
         }

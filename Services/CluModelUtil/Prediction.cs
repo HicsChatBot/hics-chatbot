@@ -144,8 +144,7 @@ namespace HicsChatBot.Services.CluModelUtil
                     return (DoctorSpecializationEntity)e;
                 }
             }
-            // Defaults to "general" doctor.
-            return new DoctorSpecializationEntity("Specialization", "general", 1, "general");
+            return null;
         }
 
         public AgreementEntity GetAgreement()
