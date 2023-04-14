@@ -83,8 +83,6 @@ namespace HicsChatBot.Dialogs
             string query = (string)stepContext.Result;
             Prediction prediction = clu.predict(query);
 
-            Console.WriteLine(prediction);
-
             if (prediction.GetTopIntent().getCategory() == "Help")
             {
                 return await stepContext.BeginDialogAsync(

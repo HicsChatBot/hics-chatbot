@@ -14,7 +14,6 @@ namespace HicsChatBot.Dialogs.UtilDialogs
     public class GetHelpDialog : ComponentDialog
     {
         private static readonly CluModelService clu = CluModelService.inst();
-        private static string question;
 
         // Maps Entity.category to explanation of the 
         private static readonly Dictionary<string, string> explanations = new Dictionary<string, string>{
@@ -58,8 +57,14 @@ namespace HicsChatBot.Dialogs.UtilDialogs
 
             foreach (Entity e in prediction.GetEntities())
             {
-                if (!seenCategories.Contains(e.getCategory()) && explanations.TryGetValue(e.getCategory(), out string explanation))
+                if (seenCategories.Contains(e.getCategory()))
                 {
+                    continue;
+                }
+
+                if (explanations.TryGetValue(e.getCategory(), out string explanation))
+                {
+                    Console.WriteLine(explanation);
                     await stepContext.Context.SendActivityAsync(MessageFactory.Text(explanation), cancellationToken);
                     seenCategories.Add(e.getCategory());
                 }
