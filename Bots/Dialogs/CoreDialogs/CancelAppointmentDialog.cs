@@ -27,6 +27,7 @@ namespace HicsChatBot.Dialogs
                 GetNextAppointmentAsync,
                 ConditionallyNavigateToBookAppointmentAsync,
                 ConfirmCancelAppointmentAsync,
+                AskBookNewAppointmentAsync,
             };
 
             // Add named dialogs to DialogSet.
@@ -97,12 +98,31 @@ namespace HicsChatBot.Dialogs
                 Appointment result = await apptsService.DeleteUpcomingAppointment(upcomingAppointmentData.nextAppt);
 
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Okay, I have cancelled your appointment."), cancellationToken);
+                return await stepContext.BeginDialogAsync(
+                        nameof(RequestConfirmationDialog),
+                        $"Would you like to book a new appointment?",
+                        cancellationToken
+                );
             }
             else
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Noted, not cancelling appointment."), cancellationToken);
+                return await stepContext.EndDialogAsync(null, cancellationToken);
             }
+        }
 
+        private static async Task<DialogTurnResult> AskBookNewAppointmentAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            bool isRequestingToBookNewAppt = (bool)stepContext.Result;
+
+            if (isRequestingToBookNewAppt)
+            {
+                return await stepContext.ReplaceDialogAsync(
+                    nameof(BookAppointmentDialog),
+                    upcomingAppointmentData.patient,
+                    cancellationToken
+                );
+            }
             return await stepContext.EndDialogAsync(null, cancellationToken);
         }
     }
