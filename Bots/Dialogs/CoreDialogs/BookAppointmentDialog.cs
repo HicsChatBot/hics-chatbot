@@ -5,6 +5,7 @@ using HicsChatBot.Dialogs.CustomDialogData;
 using HicsChatBot.Dialogs.UtilDialogs;
 using HicsChatBot.Model;
 using HicsChatBot.Services;
+using HicsChatBot.Services.CluModelUtil;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 
@@ -27,6 +28,7 @@ namespace HicsChatBot.Dialogs
             {
                 // Add waterfall steps here
                 GetAppointmentTypeAsync,
+                CheckIfNeedHelpAsync,
                 NewOrFollowUpAppointmentAsync,
                 HandleAppointmentAsync,
                 ConfirmAppointmentAsync,
@@ -42,6 +44,8 @@ namespace HicsChatBot.Dialogs
             AddDialog(new BookNewAppointmentDialog());
 
             AddDialog(new TransferToHumanDialog());
+
+            AddDialog(new GetHelpDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
@@ -74,9 +78,36 @@ namespace HicsChatBot.Dialogs
                     cancellationToken: cancellationToken);
         }
 
+        private static async Task<DialogTurnResult> CheckIfNeedHelpAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            string query = (string)stepContext.Result;
+            Prediction prediction = clu.predict(query);
+
+            Console.WriteLine(prediction);
+
+            if (prediction.GetTopIntent().getCategory() == "Help")
+            {
+                return await stepContext.BeginDialogAsync(
+                        nameof(GetHelpDialog),
+                        query,
+                        cancellationToken
+                        );
+            }
+
+            return await stepContext.NextAsync(query, cancellationToken);
+        }
+
         private static async Task<DialogTurnResult> NewOrFollowUpAppointmentAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string query = (string)stepContext.Result;
+            if (query == null)
+            { // requested for help, re-request for appointment type: new (first consult) or follow up
+                return await stepContext.ReplaceDialogAsync(
+                        nameof(BookAppointmentDialog),
+                        followUpAppointmentData.patient,
+                        cancellationToken: cancellationToken);
+            }
+
             query = query.Trim().ToLower().Replace("-", " ").Replace(".", "");
 
             if (query.Contains("follow up"))

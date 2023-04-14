@@ -19,12 +19,15 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             {
                 // Add waterfall steps here
                 RequestSpecializationAsync,
+                CheckIfNeedHelpAsync,
                 CompleteAsync,
             };
 
             // Add named dialogs to DialogSet.
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
             AddDialog(new TextPrompt(nameof(TextPrompt)));
+
+            AddDialog(new GetHelpDialog());
 
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
@@ -36,6 +39,23 @@ namespace HicsChatBot.Dialogs.UtilDialogs
                     nameof(TextPrompt),
                     new PromptOptions { Prompt = MessageFactory.Text($"Are you looking for a particular type of treatment or doctor, or just a general doctor?") },
                     cancellationToken);
+        }
+
+        private static async Task<DialogTurnResult> CheckIfNeedHelpAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            string query = (string)stepContext.Result;
+            Prediction prediction = clu.predict(query);
+
+            if (prediction.GetTopIntent().getCategory() == "Help")
+            {
+                return await stepContext.BeginDialogAsync(
+                        nameof(GetHelpDialog),
+                        query,
+                        cancellationToken
+                        );
+            }
+
+            return await stepContext.NextAsync(query, cancellationToken);
         }
 
         private static async Task<DialogTurnResult> CompleteAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)

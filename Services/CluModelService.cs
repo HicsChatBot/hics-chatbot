@@ -15,7 +15,7 @@ namespace HicsChatBot.Services
         private ConversationAnalysisClient client;
 
         private readonly String projectName = "sched-langservice";
-        private readonly String deploymentName = "model-v6";
+        private readonly String deploymentName = "model-v7";
 
         private static CluModelService instance = new CluModelService();
 
