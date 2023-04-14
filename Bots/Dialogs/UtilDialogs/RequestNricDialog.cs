@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HicsChatBot.Services;
+using HicsChatBot.Services.CluModelUtil;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 
@@ -41,8 +42,7 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             string query = (string)stepContext.Result;
 
             string nric = getNric(query);
-
-            if (nric == null)
+            if (nric == null) // no nric found in client's response.
             {
                 await stepContext.Context.SendActivityAsync("I didn't quite get that, let's try again.", cancellationToken: cancellationToken);
                 return await stepContext.ReplaceDialogAsync(nameof(RequestNricDialog), cancellationToken: cancellationToken);

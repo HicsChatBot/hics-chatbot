@@ -17,8 +17,8 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             var waterfallSteps = new WaterfallStep[]
             {
                 // Add waterfall steps here
-                RequestPrivateOrSubsidizedAsync,
                 RequestRankingAsync,
+                CheckIfNeedHelpAsync,
                 CompleteAsync,
             };
 
@@ -26,44 +26,44 @@ namespace HicsChatBot.Dialogs.UtilDialogs
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
             AddDialog(new TextPrompt(nameof(TextPrompt)));
 
+            AddDialog(new GetHelpDialog());
+
             // Initial child dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
         }
 
-        private static async Task<DialogTurnResult> RequestPrivateOrSubsidizedAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private static async Task<DialogTurnResult> RequestRankingAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             return await stepContext.PromptAsync(
                     nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text($"Would you like to see a private doctor or make a subsidized appointment? For subsidized appointments, you are not allowed to choose the doctor you see.") },
+                    new PromptOptions { Prompt = MessageFactory.Text($"Would you like to see a consultant, specialist or senior consultant?") },
                     cancellationToken);
         }
 
-        private static async Task<DialogTurnResult> RequestRankingAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private static async Task<DialogTurnResult> CheckIfNeedHelpAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string query = (string)stepContext.Result;
-            query = query.ToLower().Replace(".", "");
+            Prediction prediction = clu.predict(query);
 
-            if (query.Contains("subsidized"))
+            if (prediction.GetTopIntent().getCategory() == "Help")
             {
-                return await stepContext.EndDialogAsync(null, cancellationToken);
+                return await stepContext.BeginDialogAsync(
+                        nameof(GetHelpDialog),
+                        query,
+                        cancellationToken
+                        );
             }
-            else if (query.Contains("private"))
-            {
-                return await stepContext.PromptAsync(
-                    nameof(TextPrompt),
-                    new PromptOptions { Prompt = MessageFactory.Text($"Would you like to see a consultant, specialist or senior consultant?") },
-                    cancellationToken);
-            }
-            else
-            {
-                await stepContext.Context.SendActivityAsync("I didn't quite get that, let's try again.", cancellationToken: cancellationToken);
-                return await stepContext.ReplaceDialogAsync(nameof(RequestRankingDialog), cancellationToken: cancellationToken);
-            }
+
+            return await stepContext.NextAsync(query, cancellationToken);
         }
 
         private static async Task<DialogTurnResult> CompleteAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string query = (string)stepContext.Result;
+            if (query == null)
+            {
+                return await stepContext.ReplaceDialogAsync(nameof(RequestRankingDialog), cancellationToken: cancellationToken);
+            }
 
             query = query.ToLower().Replace(".", "");
 
