@@ -127,78 +127,94 @@ Simple chatbot that is able to handle appointment management for healthcare serv
 1. table data
 ![Table: DoctorsSpecializations](./public/images/mockdata/doctorsspecializations_data.png)
 
-
-
 ---
+## How to:
 
-# EchoBot
-
-Bot Framework v4 echo bot sample.
-
-This bot has been created using [Bot Framework](https://dev.botframework.com), it shows how to create a simple bot that accepts input from the user and echoes it back.
-
-## Prerequisites
-
+#### Prerequisites:
 - [.NET SDK](https://dotnet.microsoft.com/download) version 6.0
-
   ```bash
   # determine dotnet version
   dotnet --version
   ```
 
-## To try this sample
+#### Local Development for Bot
+Azure Configurations (eg. credentials, endpoints) are defined in Azure Portal.
 
-- Clone the repository
+To be able to set the appropriate configurations for local development, (for `CluModelService.cs` and `DatabaseServices/BaseService.cs`)
+you can do either: 
+1. You can set the environment variables when bot starts up. (not implemented yet)
+1. Replace `System.Environment.GetEnvironmentVariable` with the apprpriate values.
+    * Warning: Do not push these fields to Github repo. (Some variables, eg. Azure Key credentials for CLU Model Service are secrets!)
 
-    ```bash
-    git clone https://github.com/Microsoft/botbuilder-samples.git
-    ```
+* You also have to change the `MicrosoftAppId` and `MicrosoftAppPassword` (in `appsettings.json`) to empty strings (ie. "").
 
-- Run the bot from a terminal or from Visual Studio:
-
-  A) From a terminal, navigate to `samples/csharp_dotnetcore/02.echo-bot`
-
-  ```bash
-  # run the bot
-  dotnet run
-  ```
-
-  B) Or from Visual Studio
-
-  - Launch Visual Studio
-  - File -> Open -> Project/Solution
-  - Navigate to `samples/csharp_dotnetcore/02.echo-bot` folder
-  - Select `EchoBot.csproj` file
-  - Press `F5` to run the project
-
-## Testing the bot using Bot Framework Emulator
+#### Testing the Bot (locally, Bot Framework Emulator)
 
 [Bot Framework Emulator](https://github.com/microsoft/botframework-emulator) is a desktop application that allows bot developers to test and debug their bots on localhost or running remotely through a tunnel.
 
 - Install the latest Bot Framework Emulator from [here](https://github.com/Microsoft/BotFramework-Emulator/releases)
 
-### Connect to the bot using Bot Framework Emulator
+After running `dotnet run` in root of local cloned repo,
+1. Launch Bot Framework Emulator
+1. Select 'Open Bot'
+1. Bot Url: `http://localhost:3978/api/messages`
+    * default port used is '3978', but if you changed the port number when running the bot, change this url accordingly.
+![How to launch Bot Framework Emulator](./public/images/bot_framework_emulator.png)
 
-- Launch Bot Framework Emulator
-- File -> Open Bot
-- Enter a Bot URL of `http://localhost:3978/api/messages`
+#### Work with Conversational Language Service
 
-## Interacting with the bot
+**Requirements**
+* Azure Account
+* Must be given access to the language service
+    * To give access, navigate to 'Access Control (IAM)' from [Azure Portal](https://portal.azure.com) and select 'Add' > 'Add Role assignment'
+        ![Language Service: Access Control](./public/images/service_access_control.png) 
 
-Enter text in the emulator.  The text will be echoed back by the bot.
+To view the project:
+* Azure Portal > 'Resources'
+* [Language Portal](https://language.cognitive.azure.com/)
+    * Set the Conversational Language Understanding Service to the service you have access to. 
+    ![Language Portal Home Page](./public/images/clu_langportal_how_to/find_project.png)
 
-## Deploy the bot to Azure
 
-To learn more about deploying a bot to Azure, see [Deploy your bot to Azure](https://aka.ms/azuredeployment) for a complete list of deployment instructions.
+**1. Adding Intent / Entity**
+(the schema can be modified in data labelling as well.)
+1. Go to: 'Schema Definition'
+    * Note that the names used for the intent / entity in 'Schema Definition' is also used when calling the Service's API endpoint
+    ![Language Portal: Schema Definition](./public/images/clu_langportal_how_to/schema_def.png)
+1. 'Add' to add new intents / entities
+1. (For entities) Select entity (radio) and 'Edit entity components' to edit the entity
 
-## Further reading
+**1. Adding Utterances / data**
+1. Select the intent and type in the utterance
+    ![Adding an utterance](./public/images/clu_langportal_how_to/add_utterance.png)
+1. To indicate a (learned) entity:
+    ![Specifying an entity in an utterance](./public/images/clu_langportal_how_to/specify_entity.png)
+    * Highlight the utterance with text and select the corresponding
+    * Note: Azure provides many pre-built components, list and regex. To configure these, click on the entity on the Activity Pane.
+        ![Configuring Azure's Prebuilt Entities](./public/images/clu_langportal_how_to/entity_prebuilt.png)
+1. Ensure you 'save changes' after making changes to the data
 
-- [Bot Framework Documentation](https://docs.botframework.com)
-- [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
-- [Activity processing](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-concept-activity-processing?view=azure-bot-service-4.0)
-- [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
-- [Azure Bot Service Documentation](https://docs.microsoft.com/azure/bot-service/?view=azure-bot-service-4.0)
-- [.NET Core CLI tools](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x)
-- [Azure CLI](https://docs.microsoft.com/cli/azure/?view=azure-cli-latest)
-- [Azure Portal](https://portal.azure.com)
-- [Channels and Bot Connector Service](https://docs.microsoft.com/en-us/azure/bot-service/bot-concepts?view=azure-bot-service-4.0)
+**1.Training the Model**
+1. 'Start a training job'
+1. Training job configuration:
+    * choose: train new model or overwrite existing model
+    * Data splitting: you can use the default 80-20 split
+1. 'Train' > wait for the training to complete
+
+**1.Deploying the Model**
+1. 'Add deployment'
+1. Deployment configuration:
+    * Create new or Overwrite existing deployment
+    * Model: select the trained model
+
+
+**1.Testing the Model**
+1. Testing in Language Portal
+    ![Language Portal: Testing Deployment](./public/images/clu_langportal_how_to/testing_deployment.png)
+    * Select:
+        * deployment name: the deployment of model you want to test
+        * text / utterance: the test utterance / query
+    * 'Run the test'
+
+1. Call the API / From the Bot:
+    * Change `deploymentName` in `CluModelService.cs` if a new deployment was created. 
